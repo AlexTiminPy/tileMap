@@ -4,57 +4,83 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import sys
 
+TILE_SIZE = 128
+
+
 class Level():
     pass
 
-class chunk():
+
+class Chunk():
 
     def __init__(self):
         self.tiles = []
 
-    pass
 
-class tile():
-
+class Tile():
     """def __init__(self): #,image,length, width,
         #self.length = length
         #self.width = width
         #self.image = image
         #self.TTL = 10"""
-
-    def __iter__(self):
-        self.frame = 0
-        return self
-
-    def __next__(self):
-        if self.frame <= 9:
-           pass
-        else:
-            self.frame = 0
-        current_frame = self.frame
-        self.frame += 1
-        return current_frame
+    pass
 
 
 class Slime(pygame.sprite.Sprite):
     def __init__(self, x, filename):
+        self.step = 0
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load(
             filename)
-        self.sub = self.image.subsurface((0,0,128,128))
+        self.sub = self.image.subsurface((0, 0, TILE_SIZE, TILE_SIZE))
         self.rect = self.sub.get_rect(
             center=(x, 64))
-    #дописать суда логику переключения чере сабсерфис, попробовать передавать суда либо гену, либо некст
+
+    def frame(self, step):
+        self.sub = self.image.subsurface((step * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE))
+        self.rect = self.sub.get_rect(
+            center=(64, 64))
+        return self.sub, self.rect
+
+    def __iter__(self):
+        self.step = 0
+        return self
+
+    def __next__(self):
+        if self.step <= 9:
+            pass
+        else:
+            self.step = 0
+        current_frame = self.step
+        self.step += 1
+        return current_frame
 
 
-slime = Slime(64,r'Slime.png')
+"""chunk = []
+for i in range(4):
+    chunk.append([]*4)
+    for j in range(4):
+        current_tile = Tile()
+        current_slime = Slime(64, r'Slime.png')
+        current_tile.slime = current_slime
+        chunk.append(current_tile)"""
 
-tile1 = tile()
+chunk = [[Tile() for t in range(4)] for i in range(4)]
+for i in range(4):
+    for j in range(4):
+        current_slime = Slime(64, r'Slime.png')
+        chunk[i][j].slime = current_slime
+
+
+"""slime = Slime(64, r'Slime.png')
+
+tile1 = Tile()
 tile1.slime = slime
-
+"""
 pygame.init()
-
-screen = pygame.display.set_mode((128*4,128*4))
+surf = pygame.Surface((200, 150))
+surf.fill((255, 255, 255))
+screen = pygame.display.set_mode((128 * 4, 128 * 4))
 screen.fill((0, 0, 0))
 pygame.display.flip()
 
@@ -64,10 +90,16 @@ while 1:
             sys.exit()
 
     screen.fill((0, 0, 0))
-    screen.blit(tile1.slime.sub, tile1.slime.rect)
+    for i in range(4):
+        for j in range(4):
+            var1 = chunk[i][j].slime.frame(next(chunk[i][j].slime))
+
+            screen.blit(var1[0], dest=(TILE_SIZE * i, TILE_SIZE * j, TILE_SIZE, TILE_SIZE))  # var1[1],
+
+    """var1 = tile1.slime.frame(next(slime))
+    screen.blit(var1[0], var1[1])  #screen.blit(tile1.slime.sub, tile1.slime.rect)"""
     pygame.display.update()
     pygame.time.delay(20)
-
 
 """img = Image.open(r'slime.png')
 
@@ -95,7 +127,6 @@ while 1:
     for i in pygame.event.get():
         if i.type == pygame.QUIT:
             sys.exit()"""
-
 
 """img = pygame.image.load(r'grass.png')
 sc = pygame.display.set_mode((1280, 1280))
